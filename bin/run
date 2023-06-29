@@ -1,0 +1,21 @@
+#!/bin/bash
+
+if [[ -z $GOPATH ]] ; then
+	echo "$(basename $0): GOPATH was not set!"
+	exit 1
+fi
+if (( $# <= 0 )) ; then
+	echo "syntax: $(basename $0) plugin-name flags"
+	exit 0
+else
+	_plugin=$1
+	shift
+	go build -i -v  -ldflags '-w -s' -o ${GOPATH}/bin/$_plugin github.com/my10c/linux-monitor-go/$_plugin
+	if echo $0 | grep check ; then
+		sudo ${GOPATH}/bin/$_plugin	\
+			-config ${GOPATH}/src/github.com/my10c/linux-monitor-go/etc/monitor-plugins.yaml $*
+	else
+		sudo ${GOPATH}/bin/$_plugin	$*
+	fi
+	exit $?
+fi
